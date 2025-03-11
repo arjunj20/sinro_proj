@@ -6,7 +6,6 @@
 <body>
     <h1>Product List</h1>
     <ul id="product-list">
-        <!-- Products will be dynamically loaded here -->
     </ul>
 
     <h2>Add New Product</h2>
@@ -19,11 +18,9 @@
 </form>
 
     <script>
-        // JavaScript to interact with the API
         const productList = document.getElementById('product-list');
         const addProductForm = document.getElementById('add-product-form');
 
-        // Fetch and display products
         async function fetchProducts() {
             const response = await fetch('/api/products/');
             const products = await response.json();
@@ -36,7 +33,6 @@
             `).join('');
         }
 
-        // Add a new product
         addProductForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(addProductForm);
@@ -53,7 +49,6 @@
             fetchProducts();
         });
 
-        // Update a product
         async function updateProduct(id) {
     try {
         const response = await fetch(`/api/products/${id}/`);
@@ -64,7 +59,6 @@
 
         const product = await response.json();
 
-        // Ask user for new values
         const newName = prompt("Enter new name:", product.name);
         const newPrice = prompt("Enter new price:", product.price);
         const newStock = prompt("Enter new stock:", product.stock);
@@ -90,7 +84,7 @@
             return;
         }
 
-        fetchProducts(); // Refresh the product list
+        fetchProducts();
     } catch (error) {
         console.error("Error updating product:", error);
         alert("Something went wrong!");
@@ -108,7 +102,7 @@
 
         if (response.ok) {
             console.log("DEBUG: Product deleted successfully!");
-            fetchProducts(); // Refresh list
+            fetchProducts();
         } else {
             console.error("ERROR: Delete failed:", await response.text());
             alert("Failed to delete product.");
@@ -121,7 +115,6 @@
 }
 
 
-        // Load products on page load
         fetchProducts();
     </script>
 </body>
