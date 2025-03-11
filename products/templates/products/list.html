@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Product Inventory</title>
+</head>
+<body>
+    <h1>Product List</h1>
+    <ul id="product-list">
+        <!-- Products will be dynamically loaded here -->
+    </ul>
+
+    <h2>Add New Product</h2>
+    <form id="add-product-form">
+    <input type="text" name="name" placeholder="Name" required>
+    <input type="number" name="price" placeholder="Price" step="0.01" required>
+    <input type="number" name="stock" placeholder="Stock" required min="0">
+    <button type="submit">Add Product</button>
+    <p id="error-message" style="color: red;"></p>
+</form>
+
+    <script>
+        // JavaScript to interact with the API
+        const productList = document.getElementById('product-list');
+        const addProductForm = document.getElementById('add-product-form');
+
+        // Fetch and display products
+        async function fetchProducts() {
+            const response = await fetch('/api/products/');
+            const products = await response.json();
+            productList.innerHTML = products.map(product => `
+                <li>
+                    ${product.name} - $${product.price} (Stock: ${product.stock})
+                    <button onclick="updateProduct(${product.id})">Update</button>
+                    <button onclick="deleteProduct(${product.id})">Delete</button>
+                </li>
+            `).join('');
+        }
+
+        // Add a new product
+        addProductForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(addProductForm);
+            const data = {
+                name: formData.get('name'),
+                price: parseFloat(formData.get('price')),
+                stock: parseInt(formData.get('stock')),
+            };
+            await fetch('/api/products/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+            fetchProducts();
+        });
+
+        // Update a product
+        async function updateProduct(id) {
+    try {
+        const response = await fetch(`/api/products/${id}/`);
+        if (!response.ok) {
+            alert("Product not found!");
+            return;
+        }
+
+        const product = await response.json();
+
+        // Ask user for new values
+        const newName = prompt("Enter new name:", product.name);
+        const newPrice = prompt("Enter new price:", product.price);
+        const newStock = prompt("Enter new stock:", product.stock);
+
+        if (newName === null || newPrice === null || newStock === null) {
+            return; // If the user cancels, don't proceed
+        }
+
+        const updatedData = {
+            name: newName,
+            price: parseFloat(newPrice),
+            stock: parseInt(newStock)
+        };
+
+        const updateResponse = await fetch(`/api/products/${id}/`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedData),
+        });
+
+        if (!updateResponse.ok) {
+            alert("Failed to update product!");
+            return;
+        }
+
+        fetchProducts(); // Refresh the product list
+    } catch (error) {
+        console.error("Error updating product:", error);
+        alert("Something went wrong!");
+    }
+}
+
+
+
+
+        async function deleteProduct(id) {
+    try {
+        console.log(`DEBUG: Deleting product with ID: ${id}`);
+
+        const response = await fetch(`/api/products/${id}/`, { method: "DELETE" });
+
+        if (response.ok) {
+            console.log("DEBUG: Product deleted successfully!");
+            fetchProducts(); // Refresh list
+        } else {
+            console.error("ERROR: Delete failed:", await response.text());
+            alert("Failed to delete product.");
+        }
+
+    } catch (error) {
+        console.error("ERROR: deleteProduct function:", error);
+        alert("Something went wrong!");
+    }
+}
+
+
+        // Load products on page load
+        fetchProducts();
+    </script>
+</body>
+</html>
